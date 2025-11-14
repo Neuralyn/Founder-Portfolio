@@ -22,6 +22,16 @@ const createFallbackGeometry = (type: string) => {
   return new THREE.BoxGeometry(1, 1, 1);
 };
 
+interface ModeWrapperProps {
+  children?: React.ReactNode;
+  glb: string;
+  geometryKey: string;
+  lockToBottom?: boolean;
+  followPointer?: boolean;
+  modeProps?: Record<string, any>;
+  [key: string]: any;
+}
+
 const ModeWrapper = memo(function ModeWrapper({
   children,
   glb,
@@ -30,7 +40,7 @@ const ModeWrapper = memo(function ModeWrapper({
   followPointer = true,
   modeProps = {},
   ...props
-}) {
+}: ModeWrapperProps) {
   const ref = useRef<THREE.Mesh>(null);
   const buffer = useFBO();
   const { viewport: vp } = useThree();
@@ -43,7 +53,6 @@ const ModeWrapper = memo(function ModeWrapper({
     geoWidthRef.current = fallback.boundingBox!.max.x - fallback.boundingBox!.min.x || 1;
     return fallback;
   });
-  const [error, setError] = useState(false);
 
   // Try to load GLB model (geometry already initialized with fallback)
   useEffect(() => {
@@ -65,20 +74,14 @@ const ModeWrapper = memo(function ModeWrapper({
             }
           },
           undefined,
-          (error) => {
+          () => {
             // On error, keep using fallback (already set)
-            console.warn(`Failed to load ${glb}, using fallback geometry:`, error);
-            if (mounted) {
-              setError(true);
-            }
+            console.warn(`Failed to load ${glb}, using fallback geometry`);
           }
         );
       } catch (err) {
         // Keep using fallback (already set)
         console.warn(`Error loading model ${glb}, using fallback:`, err);
-        if (mounted) {
-          setError(true);
-        }
       }
     };
 
@@ -135,15 +138,20 @@ const ModeWrapper = memo(function ModeWrapper({
   );
 });
 
-function Lens({ modeProps, ...p }) {
+interface ComponentProps {
+  modeProps?: Record<string, any>;
+  [key: string]: any;
+}
+
+function Lens({ modeProps, ...p }: ComponentProps) {
   return <ModeWrapper glb="/assets/3d/lens.glb" geometryKey="Cylinder" followPointer modeProps={modeProps} {...p} />;
 }
 
-function Cube({ modeProps, ...p }) {
+function Cube({ modeProps, ...p }: ComponentProps) {
   return <ModeWrapper glb="/assets/3d/cube.glb" geometryKey="Cube" followPointer modeProps={modeProps} {...p} />;
 }
 
-function Bar({ modeProps = {}, ...p }) {
+function Bar({ modeProps = {}, ...p }: ComponentProps) {
   const defaultMat = {
     transmission: 1,
     roughness: 0,
@@ -170,18 +178,18 @@ function NavItems({ items }: { items: Array<{ label: string; link: string }> }) 
   const group = useRef<THREE.Group>(null);
   const { viewport, camera } = useThree();
 
-  const DEVICE = {
+  const DEVICE: Record<string, { max: number; spacing: number; fontSize: number }> = {
     mobile: { max: 639, spacing: 0.2, fontSize: 0.035 },
     tablet: { max: 1023, spacing: 0.24, fontSize: 0.035 },
     desktop: { max: Infinity, spacing: 0.3, fontSize: 0.035 }
   };
 
-  const getDevice = () => {
+  const getDevice = (): keyof typeof DEVICE => {
     const w = window.innerWidth;
     return w <= DEVICE.mobile.max ? 'mobile' : w <= DEVICE.tablet.max ? 'tablet' : 'desktop';
   };
 
-  const [device, setDevice] = useState(getDevice());
+  const [device, setDevice] = useState<keyof typeof DEVICE>(getDevice());
 
   useEffect(() => {
     const onResize = () => setDevice(getDevice());
@@ -214,12 +222,10 @@ function NavItems({ items }: { items: Array<{ label: string; link: string }> }) 
           color="white"
           anchorX="center"
           anchorY="middle"
-          depthWrite={false}
           outlineWidth={0}
           outlineBlur="20%"
           outlineColor="#000"
           outlineOpacity={0.5}
-          depthTest={false}
           renderOrder={10}
           onClick={(e) => {
             e.stopPropagation();
@@ -268,18 +274,18 @@ function Images() {
 }
 
 function Typography() {
-  const DEVICE = {
+  const DEVICE: Record<string, { fontSize: number }> = {
     mobile: { fontSize: 0.2 },
     tablet: { fontSize: 0.4 },
     desktop: { fontSize: 0.6 }
   };
 
-  const getDevice = () => {
+  const getDevice = (): keyof typeof DEVICE => {
     const w = window.innerWidth;
     return w <= 639 ? 'mobile' : w <= 1023 ? 'tablet' : 'desktop';
   };
 
-  const [device, setDevice] = useState(getDevice());
+  const [device, setDevice] = useState<keyof typeof DEVICE>(getDevice());
 
   useEffect(() => {
     const onResize = () => setDevice(getDevice());

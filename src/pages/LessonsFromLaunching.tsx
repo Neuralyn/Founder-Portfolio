@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { FiArrowLeft, FiTrendingUp, FiGlobe, FiDollarSign, FiUsers, FiShield, FiTarget, FiBarChart2, FiMap, FiZap, FiCheckCircle } from 'react-icons/fi';
+import { FiArrowLeft, FiGlobe, FiUsers, FiShield, FiTarget, FiBarChart2 } from 'react-icons/fi';
 import { useRef } from 'react';
 import './LessonsFromLaunching.css';
 
